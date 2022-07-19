@@ -4,17 +4,17 @@
   http://github.com/andresarmento/modbus-arduino
 */
 
-#ifdef ESP8266
- #include <ESP8266WiFi.h>
+#ifdef ESP8266              //including esp8266 microcontroller  library 
+ #include <ESP8266WiFi.h>   //including esp8266 wifi library 
 #else //ESP32
  #include <WiFi.h>
 #endif
-#include <ModbusIP_ESP8266.h>
+#include <ModbusIP_ESP8266.h>  //including modbus library 
 
 
-#include <DHT.h>  
-#include <MQ2.h>
-#include <ESP8266WebServer.h>
+#include <DHT.h>               //including temperature sensor library 
+#include <MQ2.h>                //including MQ-2 gas sensor  library 
+#include <ESP8266WebServer.h>    //including  webserver library  
 
 
 
@@ -35,7 +35,7 @@ const int CO2_HREG= 11;
 
 
 
-//
+//  initializing variables 
 float h1,t1,h2,t2,h3,t3;
 int h11=20,h22=20,h33=20,t11=20,t22=20,t33=30;
 int lpg, co, smoke,Smoke1,lpg1,co1;
@@ -61,7 +61,7 @@ void sendSensor();
 void handle_OnConnect();
 void handle_NotFound();
 
-void sendSensor()
+void sendSensor()  //reading values from sensor and prnting these values on serial monitor 
 {
   
    h1 = dht2.readHumidity();
@@ -135,21 +135,22 @@ void sendSensor()
 }
 
   
-void setup() {
+void setup() //initializing objects  
+{
   Serial.begin(115200);
 
  dht1.begin();
  dht2.begin();
  dht3.begin();
  mq2_1.begin();
-IPAddress local_IP(192, 168, 0, 102);
-IPAddress gateway(192, 168, 0, 123);
+IPAddress local_IP(192, 168, 0, 102); //using that Ip address to send values to webservr and modbus poll 
+IPAddress gateway(192, 168, 0, 123);  //
 IPAddress subnet(255, 255, 255, 0);
  if (!WiFi.config(local_IP, gateway, subnet)) {
     Serial.println("STA Failed to configure");
   }
   
-  WiFi.begin("TP-Link_FC18", "84558428");
+  WiFi.begin("TP-Link_FC18", "84558428"); //connecting to wifi using SSID and password 
 
   
 
@@ -164,22 +165,23 @@ IPAddress subnet(255, 255, 255, 0);
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
   Serial.println(WiFi.softAPIP());
-  server.on("/", handle_OnConnect);
+  server.on("/", handle_OnConnect); //connecting to webserver
   server.onNotFound(handle_NotFound);
 
   server.begin();
   Serial.println("HTTP server started");
   
   mb.server();  
-  mb.addHreg(0,0,20);
+  mb.addHreg(0,0,20); //adding number of holding registers 
 }
  
-void loop() {
+void loop() //functions we want to repeate again and again  
+{
    //Call once inside loop() - all magic here
   sendSensor();
    
    
-  mb.Hreg(0, t11);
+  mb.Hreg(0, t11);  //sending values to holding registers 
   mb.Hreg(1, h11);
   mb.Hreg(2, t22);
   mb.Hreg(3, h22);
